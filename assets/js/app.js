@@ -200,7 +200,7 @@
     bindStatic();
     // 作者預覽／測試用：?shot=account|fav|home|settings|suggest（僅限示範模式）
     var shot = (q.get('shot') || '').toLowerCase();
-    var animOnly = { intro: 1, drop: 1, sword: 1, char: 1, debug: 1, flow: 1, stuck: 1, watchdog: 1, loginflow: 1, auth: 1, fx7: 1, favshot: 1, themes: 1 };
+    var animOnly = { intro: 1, drop: 1, sword: 1, char: 1, debug: 1, flow: 1, stuck: 1, watchdog: 1, loginflow: 1, auth: 1, fx7: 1, favshot: 1, themes: 1, fields: 1 };
     if (shot && (API.mode() === 'local' || animOnly[shot])) { return previewShot(shot).catch(function (e) { console.warn('[xx] preview', e); }); }
     if (!saved) { showScreen('lang', { instant: true }); bootMark('ready'); if (rough) toast(t('recovery.boot'), 'bad'); return; }
     markLang(saved);
@@ -370,6 +370,30 @@
       });
       applyTheme(window.XX_THEME ? window.XX_THEME.DEFAULT_ID : null);
       return Promise.resolve().then(function () { logDump(tlist); });
+    }
+    if (shot === 'fields') {
+      // 作者檢視用：?shot=fields&c=0..6&kind=login|suggest → 檢查輸入框是否白底黑字
+      var fq = new URLSearchParams(location.search);
+      var fc = Math.max(0, Math.min(CHARS.length - 1, parseInt(fq.get('c') || '0', 10) || 0));
+      applyTheme(CHARS[fc].id);
+      var flog = ['輸入框檢查 · 主題 ' + (fc + 1) + '/7 → ' + I18N.charName(CHARS[fc]) + '（' + CHARS[fc].theme.bgfx + '）'];
+      if ((fq.get('kind') || 'login') === 'login') {
+        showScreen('account', { instant: true }); setTab('login');
+        var fn = $('#log-name'), fp = document.querySelector('input[type=password]');
+        if (fn) fn.value = '毛奈';
+        if (fp) fp.value = 'Rorkey@0820';
+        var cs3 = getComputedStyle(fn || document.body);
+        flog.push('帳號欄 background=' + cs3.backgroundColor + ' | color=' + cs3.color + ' | caret=' + cs3.caretColor);
+      } else {
+        S.user = { username: '仙友', role: 'member', favorite: CHARS[fc].id };
+        S.panel = 'suggest';
+        showScreen('home', { instant: true }); mountHome();
+        var fta = document.querySelector('#panel-suggest textarea');
+        if (fta) { fta.value = '三師兄的過場影片想再長一點，背景的白雲很療癒，請多加分頁。'; }
+        var cs4 = getComputedStyle(fta || document.body);
+        flog.push('建議欄 background=' + cs4.backgroundColor + ' | color=' + cs4.color + ' | 欄位數=' + document.querySelectorAll('#panel-suggest textarea').length);
+      }
+      return Promise.resolve().then(function () { logDump(flog); });
     }
     var demoName = '試劍者', admin = CFG.admin.username;
     return API.init()
@@ -1280,7 +1304,7 @@
       '<div class="chip-grid" id="set-fav"></div><p class="set-hint">' + t('fav.videoNote') + '</p></div>');
     var cg = favCard.querySelector('#set-fav');
     CHARS.forEach(function (c) {
-      var b = el('<button type="button" class="chip-c' + (S.user.favorite === c.id ? ' is-on' : '') + '" data-id="' + c.id + '" style="--c1:' + c.c1 + ';--c2:' + c.c2 + '">' +
+      var b = el('<button type="button" class="chip-c' + (S.user.favorite === c.id ? ' is-on' : '') + '" data-id="' + c.id + '" style="' + (window.XX_THEME ? window.XX_THEME.cardVars(c) : ('--c1:' + c.c1 + ';--c2:' + c.c2)) + '">' +
         '<span>' + (c.glyph || '✦') + '</span><b>' + U.esc(I18N.charName(c)) + '</b><i>' + (S.videos[c.id] ? '▶' : '') + '</i></button>');
       b.onclick = function (ev) {
         if (S.busy) return;

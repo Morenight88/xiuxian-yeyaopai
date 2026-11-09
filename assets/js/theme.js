@@ -143,12 +143,17 @@
     applyDefault: function () { return apply(charById(DEFAULT_ID)); },
     current: function () { return current; },
     paletteOf: paletteOf,
-    /* 給「七個選項」卡片用：把該角色的主題色塞成卡片自己的變數 */
+    /* 給「七個選項／七個角色膠囊」用：把該角色的主題色塞成它自己的變數。
+       --cink / --cink2 ＝ 該角色自己的深色底（所以七張卡不會是白底）       */
     cardVars: function (ch) {
       var p = paletteOf(ch);
-      return '--c1:' + p.a1 + ';--c2:' + p.a2 + ';--ctint:' + rgba(p.a1, .14) +
-        ';--ctint2:' + rgba(mix(p.a1, p.a2, .5), .07) + ';--cglyph:' + rgba(p.a1, .55) +
-        ';--crail:' + rgba(p.light ? '#ffffff' : p.a1, .22);
+      var ink1 = mix(p.ink, p.a1, .12);
+      var ink2 = mix(p.ink2, p.a1, .18);
+      return '--c1:' + p.a1 + ';--c2:' + p.a2 +
+        ';--cink:' + rgba(ink1, .93) + ';--cink2:' + rgba(ink2, .96) +
+        ';--ctint:' + rgba(p.a1, .18) +
+        ';--ctint2:' + rgba(mix(p.a1, p.a2, .5), .08) + ';--cglyph:' + rgba(p.a1, .55) +
+        ';--crail:' + rgba(p.light ? '#ffffff' : p.a1, .26);
     },
     DEFAULT_ID: DEFAULT_ID,
     mixHex: mix, rgba: rgba
