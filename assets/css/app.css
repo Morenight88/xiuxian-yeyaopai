@@ -211,13 +211,13 @@ code { font-family: ui-monospace, Consolas, monospace; background: rgba(255, 255
 .auth-form { display: grid; gap: 14px; animation: formIn .45s var(--ease-out); }
 .field { display: grid; gap: 6px; }
 .field > span { color: var(--dim); font-size: .84rem; letter-spacing: .06em; }
-.field input, textarea, .pk-link {
+.field input, textarea, input:not([type=checkbox]):not([type=radio]):not([type=file]), select {
   width: 100%; padding: .85em 1em; border-radius: 12px; border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--ink) 45%, #000 55%), .55); color: var(--txt); transition: border-color .25s, box-shadow .25s, background .25s;
+  background: var(--input-bg); color: var(--input-txt); caret-color: var(--input-txt); transition: border-color .25s, box-shadow .25s, background .25s;
   font-weight: 300;
 }
-.field input:focus, textarea:focus, .pk-link:focus {
-  outline: 0; border-color: color-mix(in srgb, var(--gold) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 12%, transparent); background: color-mix(in srgb, var(--ink) 45%, #000 55%), .8);
+.field input:focus, textarea:focus, .pk-link:focus, input:not([type=checkbox]):not([type=radio]):not([type=file]):focus, select:focus {
+  outline: 0; border-color: color-mix(in srgb, var(--gold) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 26%, transparent);
 }
 .field-hint { color: var(--dimmer); font-size: .76rem; font-style: normal; line-height: 1.5; }
 .check { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; color: var(--dim); font-size: .88rem; }
@@ -315,7 +315,7 @@ code { font-family: ui-monospace, Consolas, monospace; background: rgba(255, 255
 .kind-tabs { display: flex; gap: 6px; background: rgba(255, 255, 255, .04); padding: 4px; border-radius: 999px; border: 1px solid var(--line); }
 .kt { display: inline-flex; gap: .4em; align-items: center; padding: .5em .95em; border-radius: 999px; border: 0; background: none; color: var(--dim); cursor: pointer; transition: .25s var(--ease); }
 .kt.is-on { background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 90%, transparent), rgba(217, 154, 91, .85)); color: color-mix(in srgb, var(--gold) 10%, #000 90%); font-weight: 600; }
-.cmp-media { min-height: 96px; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: 12px; background: color-mix(in srgb, var(--ink) 45%, #000 55%), .4); padding: 10px; }
+.cmp-media { min-height: 96px; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: 12px; background: color-mix(in srgb, var(--ink) 55%, transparent); padding: 10px; }
 .picked { display: flex; align-items: center; gap: 12px; width: 100%; }
 .picked .pk { width: 130px; height: 92px; border-radius: 10px; overflow: hidden; background: #0a1220; flex: none; }
 .picked b { flex: 1; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -427,7 +427,7 @@ code { font-family: ui-monospace, Consolas, monospace; background: rgba(255, 255
 .pt.is-on { background: color-mix(in srgb, var(--gold) 16%, transparent); border-color: var(--line-strong); color: var(--gold-soft); }
 .pk-body { min-height: 260px; }
 .pk-list { display: grid; gap: 8px; max-height: 52vh; overflow: auto; padding-right: 4px; }
-.pk-item { display: grid; grid-template-columns: 96px 1fr auto; gap: 12px; align-items: center; padding: 8px; border-radius: 12px; border: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 45%, #000 55%), .5); cursor: pointer; color: inherit; text-align: left; transition: .22s var(--ease); }
+.pk-item { display: grid; grid-template-columns: 96px 1fr auto; gap: 12px; align-items: center; padding: 8px; border-radius: 12px; border: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 62%, transparent); cursor: pointer; color: inherit; text-align: left; transition: .22s var(--ease); }
 .pk-item:hover { border-color: var(--line-strong); transform: translateX(4px); background: color-mix(in srgb, var(--gold) 7%, transparent); }
 .pk-thumb { width: 96px; height: 68px; border-radius: 8px; overflow: hidden; background: color-mix(in srgb, var(--ink) 55%, #000 45%); display: grid; place-items: center; }
 .pk-thumb img, .pk-thumb video { width: 100%; height: 100%; object-fit: cover; }
@@ -453,12 +453,12 @@ code { font-family: ui-monospace, Consolas, monospace; background: rgba(255, 255
 .seg button { padding: .55em 1.3em; border-radius: 999px; border: 0; background: none; color: var(--dim); cursor: pointer; transition: .25s var(--ease); }
 .seg button.is-on { background: linear-gradient(135deg, var(--gold), color-mix(in srgb, var(--gold) 76%, #000 24%)); color: color-mix(in srgb, var(--gold) 10%, #000 90%); font-weight: 700; }
 .chip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 10px; }
-.chip-c { display: grid; gap: 2px; justify-items: center; padding: 12px 8px; border-radius: 12px; border: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 45%, #000 55%), .45); cursor: pointer; color: var(--txt); transition: .25s var(--ease-out); }
+.chip-c { display: grid; gap: 2px; justify-items: center; padding: 12px 8px; border-radius: 12px; border: 1px solid var(--line); background: linear-gradient(168deg, var(--ctint, rgba(255, 255, 255, .06)), transparent 62%), var(--cink, color-mix(in srgb, var(--ink) 62%, transparent)); cursor: pointer; color: #fff; transition: .25s var(--ease-out); }
 .chip-c span { font-size: 1.5rem; color: var(--c1); }
 .chip-c b { font-size: .86rem; font-weight: 400; }
 .chip-c i { font-size: .68rem; font-style: normal; color: var(--dimmer); min-height: 1em; }
 .chip-c:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--c1) 50%, transparent); }
-.chip-c.is-on { border-color: color-mix(in srgb, var(--c1) 70%, transparent); background: color-mix(in srgb, var(--c1) 12%, color-mix(in srgb, var(--ink) 45%, #000 55%), .45)); }
+.chip-c.is-on { border-color: color-mix(in srgb, var(--c1) 70%, transparent); background: color-mix(in srgb, var(--c1) 24%, var(--cink2, var(--cink, var(--panel)))); }
 .switch { display: inline-flex; align-items: center; }
 .switch input { display: none; }
 .switch span { width: 54px; height: 30px; border-radius: 999px; background: rgba(255, 255, 255, .1); border: 1px solid var(--line); position: relative; transition: .3s var(--ease-out); cursor: pointer; }
@@ -469,7 +469,7 @@ code { font-family: ui-monospace, Consolas, monospace; background: rgba(255, 255
 .stat-row span { padding: .4em .8em; border-radius: 999px; background: rgba(255, 255, 255, .05); border: 1px solid var(--line); font-size: .78rem; color: var(--dim); }
 #panel-suggest textarea { min-height: 130px; }
 .sg-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--dimmer); font-size: .78rem; }
-.sg-item { padding: 12px; border-radius: 12px; background: color-mix(in srgb, var(--ink) 45%, #000 55%), .5); border: 1px solid var(--line); margin-bottom: 8px; }
+.sg-item { padding: 12px; border-radius: 12px; background: color-mix(in srgb, var(--ink) 62%, transparent); border: 1px solid var(--line); margin-bottom: 8px; }
 .sg-item b { color: var(--dimmer); font-size: .74rem; font-weight: 400; }
 .sg-item p { margin: .3rem 0 0; font-size: .9rem; line-height: 1.7; white-space: pre-wrap; }
 
@@ -491,7 +491,7 @@ code { font-family: ui-monospace, Consolas, monospace; background: rgba(255, 255
 .modal-wrap.is-closing { opacity: 0; }
 .modal {
   width: min(520px, 100%); max-height: 88dvh; overflow: auto; border-radius: 18px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--ink-2) 70%, #fff 30%), .97), rgba(10, 15, 24, .97));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ink-2) 96%, transparent), color-mix(in srgb, var(--ink) 97%, transparent));
   border: 1px solid var(--line-strong); box-shadow: var(--shadow);
   transform: translateY(26px) scale(.96); opacity: 0; transition: transform .42s var(--ease-out), opacity .3s var(--ease);
 }
@@ -560,7 +560,7 @@ code { font-family: ui-monospace, Consolas, monospace; background: rgba(255, 255
 
 /* 七個選項卡：每張都是該角色的配色（變數由 XX_THEME.cardVars 塞進 style） */
 .fav-card {
-  background: linear-gradient(168deg, var(--ctint, rgba(255, 255, 255, .05)), transparent 60%), var(--panel);
+  background: linear-gradient(168deg, var(--ctint, rgba(255, 255, 255, .06)), transparent 58%), var(--cink, var(--panel));
   border-color: var(--crail, var(--line));
 }
 .fav-card::before {
@@ -583,6 +583,55 @@ html.theme-morph input, html.theme-morph textarea, html.theme-morph .btn {
   transition: background-color .6s var(--ease-out), border-color .6s var(--ease-out),
     color .6s var(--ease-out), box-shadow .6s var(--ease-out);
 }
+
+/* ══════════ 輸入框一律白底黑字（作者指定）══════════
+   帳號、密碼、建議、發文、留言、搜尋、Drive 連結欄，不管選哪種角色主題，
+   都是白底＋黑字＋深色游標，絕對不會再出現「白底白字看不到」。 */
+:root {
+  --input-bg: #fdfdff;
+  --input-fill: #fdfdff;
+  --input-txt: #14131a;
+  --input-dim: #6c6b7a;
+  --input-line: rgba(20, 19, 26, .22);
+  --cink: rgba(20, 18, 26, .72);
+  --cink2: rgba(30, 27, 38, .8);
+}
+input::placeholder, textarea::placeholder { color: var(--input-dim); opacity: 1; }
+.field input, textarea,
+input:not([type=checkbox]):not([type=radio]):not([type=file]), select {
+  font-weight: 400; letter-spacing: .01em;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .18);
+}
+/* Chrome 自動填密碼／帳號時不要把文字染成藍色、也不要染成深色底 */
+input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill,
+input:-webkit-autofill:hover, input:-webkit-autofill:focus, textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--input-txt);
+  -webkit-box-shadow: 0 0 0 1000px var(--input-fill) inset, inset 0 1px 2px rgba(0, 0, 0, .18);
+  caret-color: var(--input-txt);
+}
+input:disabled, textarea:disabled, input[readonly], textarea[readonly] {
+  background: color-mix(in srgb, var(--input-bg) 82%, #000 18%); color: var(--input-dim);
+}
+/* 選取到的文字也用主題色，黑字在 whitelist 上依舊清楚 */
+.field input::selection, textarea::selection { background: color-mix(in srgb, var(--gold) 45%, transparent); color: #0c0b10; }
+
+/* ══════════ 七個角色：卡片／膠囊一律用「該角色自己的深色底」══════════
+   --cink / --cink2 由 theme.js 的 cardVars() 塞進每個元素（該角色的質感黑），
+   所以七張卡不會是白底，而是各自的配色底；文字一律用白色確保清楚。   */
+.fav-card { color: #fff; }
+.fav-card .fav-name, .fav-card .fav-count { color: #fff; }
+.fav-card .fav-en { color: rgba(255, 255, 255, .74); }
+.fav-card .fav-idx { color: rgba(255, 255, 255, .55); }
+.fav-card .fav-bar { background: rgba(255, 255, 255, .16); }
+.fav-card .fav-bar i { background: linear-gradient(90deg, var(--c1), var(--c2)); }
+.chip-c { color: #fff; }
+.chip-c b { color: #fff; font-weight: 500; }
+.chip-c i { color: rgba(255, 255, 255, .78); }
+.chip-c.is-on b, .chip-c.is-on i { color: #fff; }
+.chip-c span { color: var(--c1); text-shadow: 0 0 18px color-mix(in srgb, var(--c1) 55%, transparent); }
+/* Drive 連結列維持深色（它不是文字輸入框） */
+.pk-link { background: color-mix(in srgb, var(--ink) 62%, transparent); color: var(--txt); }
+.pk-link:focus { background: color-mix(in srgb, var(--ink) 74%, transparent); }
 
 @media (max-width: 560px) {
   /* 手機上背景動畫淡一點，文字對比才夠 */
