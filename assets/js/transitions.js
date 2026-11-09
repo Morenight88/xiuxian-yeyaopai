@@ -121,35 +121,212 @@
   }
   function clearParts() { parts = []; if (ctx) ctx.clearRect(0, 0, innerWidth, innerHeight); }
 
-  /* ── 背景靈氣粒子（常駐，很淡）── */
+  /* ── 常駐背景動畫（依主題切換）────────────────────────────────────
+     petals 櫻花瓣飘落 | petalsGold 黃花瓣飘落 | ripple 水波紋
+     flame 火焰波動    | cloud 白雲緩慢飄過     | lightning 紫色閃電
+     leaves 綠葉飄落   （顏色取自當前主題的 a1／a2，由 theme.js 呼叫
+     setAmbient(mode, {a1,a2}) 切換；預設＝小師姐櫻花瓣）            */
+  var amb = { mode: 'petals', a1: '#ff9ec4', a2: '#ffffff', restart: null };
+  function setAmbient(mode, colors) {
+    if (colors) { amb.a1 = colors.a1 || amb.a1; amb.a2 = colors.a2 || amb.a2; }
+    if (mode && mode !== amb.mode) { amb.mode = mode; if (amb.restart) amb.restart(); }
+    else if (mode) { amb.mode = mode; }
+  }
+  function ambHex(s) {
+    s = String(s || '#ffffff').replace('#', '');
+    if (s.length === 3) s = s[0] + s[0] + s[1] + s[1] + s[2] + s[2];
+    var n = parseInt(s.slice(0, 6), 16);
+    if (isNaN(n)) n = 0xffffff;
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
   function ambient() {
     var c = $('#bg-canvas');
     if (!c || reduce()) return;
-    var g = c.getContext('2d'), w = 0, h = 0, motes = [], d = Math.min(window.devicePixelRatio || 1, 2);
+    var g = c.getContext('2d'), w = 0, h = 0, d = Math.min(window.devicePixelRatio || 1, 2);
+    var fall = [], embers = [], clouds = [], rings = [], bolt = null, nextBolt = 0, nextRing = 0;
+    function RGBA(s, a) { var x = ambHex(s); return 'rgba(' + x[0] + ', ' + x[1] + ', ' + x[2] + ', ' + a + ')'; }
     function size() {
       w = innerWidth; h = innerHeight;
       c.width = w * d; c.height = h * d;
       c.style.width = w + 'px'; c.style.height = h + 'px';
       g.setTransform(d, 0, 0, d, 0, 0);
+      if (amb.restart) amb.restart();
     }
+    function newFall(seed) {
+      return { x: Math.random() * w, y: seed ? Math.random() * h : -20,
+        vy: .35 + Math.random() * .55, vx: (Math.random() - .5) * .5,
+        rot: Math.random() * 6.283, vr: (Math.random() - .5) * .028,
+        s: 5 + Math.random() * 8, ph: Math.random() * 6.283, a: .32 + Math.random() * .42 };
+    }
+    function newEmber() {
+      return { x: Math.random() * w, y: h + 8, vy: .8 + Math.random() * 1.7,
+        vx: (Math.random() - .5) * .6, r: .9 + Math.random() * 2.6,
+        a: .28 + Math.random() * .5, ph: Math.random() * 6 };
+    }
+    function newCloud(seed) {
+      return { x: seed ? Math.random() * w : -w * .28, y: h * (.08 + Math.random() * .62),
+        rw: w * (.12 + Math.random() * .17), v: .06 + Math.random() * .16, a: .12 + Math.random() * .10 };
+    }
+    function makeBolt() {
+      var x = w * (.12 + Math.random() * .76), y = -12, pts = [{ x: x, y: y }];
+      while (y < h * .78) { y += 24 + Math.random() * 42; x += (Math.random() - .5) * 76; pts.push({ x: x, y: y }); }
+      /* 分支：從主幹某一處分出一道短叉，雷擊看起來才有層次 */
+      var b = pts[Math.floor(pts.length * (.35 + Math.random() * .3))];
+      var fx = b.x, fy = b.y, fork = [{ x: fx, y: fy }];
+      for (var k = 0; k < 4; k++) { fy += 20 + Math.random() * 26; fx += (Math.random() - .5) * 96; fork.push({ x: fx, y: fy }); }
+      return { main: pts, fork: fork };
+    }
+    amb.restart = function () {
+      /* 換主題的瞬間就來一道雷／一圈波紋，使用者立刻看得見這個角色的 signature */
+      fall = []; embers = []; clouds = []; rings = []; bolt = null; nextBolt = Date.now() - 1; nextRing = 0;
+      var i, m = amb.mode;
+      if (m === 'petals' || m === 'petalsGold') for (i = 0; i < 26; i++) fall.push(newFall(true));
+      else if (m === 'leaves') for (i = 0; i < 22; i++) fall.push(newFall(true));
+      else if (m === 'flame') for (i = 0; i < 34; i++) { var e = newEmber(); e.y = Math.random() * h; embers.push(e); }
+      else if (m === 'cloud') for (i = 0; i < 7; i++) clouds.push(newCloud(true));
+      else if (m === 'ripple') for (i = 0; i < 4; i++) rings.push({ x: w * (.1 + i * .22), y: h * (.28 + Math.random() * .55), r: 22 + i * 44, a: .6 });
+    };
     size(); window.addEventListener('resize', size, { passive: true });
-    for (var i = 0; i < 46; i++) motes.push(newMote(w, h, true));
-    function newMote(w, h, seed) {
-      return { x: Math.random() * w, y: seed ? Math.random() * h : h + 12,
-        r: .6 + Math.random() * 2.2, vy: .12 + Math.random() * .35, vx: (Math.random() - .5) * .18,
-        a: .12 + Math.random() * .3, hue: Math.random() < .3 ? '196,209,165' : '230,194,107', ph: Math.random() * 6 };
+    amb.restart();
+
+    /* 櫻花瓣／黃花瓣／綠葉：下落＋左右擺動＋翻轉 */
+    function drawFall(t, leaf) {
+      var col = amb.a1, hi = leaf ? '#e6fff2' : '#ffffff';
+      for (var i = 0; i < fall.length; i++) {
+        var o = fall[i];
+        o.y += o.vy; o.x += o.vx + Math.sin((o.y + o.ph * 40) / 70) * .38; o.rot += o.vr;
+        if (o.y > h + 24) fall[i] = newFall(false);
+        g.save(); g.translate(o.x, o.y); g.rotate(o.rot);
+        g.globalAlpha = Math.max(0, o.a * (.62 + .38 * Math.sin(t / 1500 + o.ph)));
+        var grd = g.createLinearGradient(-o.s, 0, o.s, 0);
+        grd.addColorStop(0, RGBA(col, .92)); grd.addColorStop(1, RGBA(hi, .4));
+        g.fillStyle = grd;
+        if (leaf) {
+          g.beginPath(); g.ellipse(0, 0, o.s * .48, o.s * 1.12, 0, 0, 6.284); g.fill();
+          g.strokeStyle = RGBA('#ffffff', .22); g.lineWidth = .7;
+          g.beginPath(); g.moveTo(0, -o.s * 1.05); g.lineTo(0, o.s * 1.05); g.stroke();
+        } else {
+          g.beginPath(); g.moveTo(0, -o.s);
+          g.quadraticCurveTo(o.s * .95, -o.s * .18, 0, o.s);
+          g.quadraticCurveTo(-o.s * .95, -o.s * .18, 0, -o.s);
+          g.fill();
+        }
+        g.restore();
+      }
+      /* 淡淡的同色底光，讓背景不會死板 */
+      var v = g.createRadialGradient(w * .5, h * .1, 0, w * .5, h * .1, h);
+      v.addColorStop(0, RGBA(col, .05)); v.addColorStop(1, RGBA(col, 0));
+      g.fillStyle = v; g.fillRect(0, 0, w, h);
     }
+    /* 水波紋：隨機點擴散的橢圓波紋＋三條緩慢起伏的水面線 */
+    function drawRipple(t) {
+      if (t > nextRing) {
+        nextRing = t + 520 + Math.random() * 820;
+        rings.push({ x: Math.random() * w, y: h * (.25 + Math.random() * .6), r: 6, a: .62 });
+        if (rings.length > 18) rings.shift();
+      }
+      for (var i = 0; i < rings.length; i++) {
+        var R = rings[i];
+        R.r += 1.15; R.a *= .9955;
+        var la = Math.max(0, R.a);
+        g.strokeStyle = RGBA(amb.a1, la * .9); g.lineWidth = 1.2 + R.r * .008;
+        g.beginPath(); g.ellipse(R.x, R.y, R.r, R.r * .4, 0, 0, 6.284); g.stroke();
+        g.strokeStyle = RGBA(amb.a2, la * .4); g.lineWidth = 1;
+        g.beginPath(); g.ellipse(R.x, R.y, R.r * .62, R.r * .25, 0, 0, 6.284); g.stroke();
+        if (R.r > 300) { rings.splice(i, 1); i--; }
+      }
+      for (var k = 0; k < 3; k++) {
+        var baseY = h * (.5 + k * .16), amp = 5 + k * 3.5, off = t / (2400 + k * 1100);
+        g.strokeStyle = RGBA(amb.a1, .14 - k * .03); g.lineWidth = 1.1;
+        g.beginPath();
+        for (var x = 0; x <= w; x += 14) {
+          var y = baseY + Math.sin(x / (165 + k * 45) + off) * amp + Math.sin(x / 620 - off * .7) * amp * .5;
+          if (x === 0) g.moveTo(x, y); else g.lineTo(x, y);
+        }
+        g.stroke();
+      }
+    }
+    /* 火焰波動：底部暖光脈動＋向上竄的火星 */
+    function drawFlame(t) {
+      var pulse = .5 + .3 * Math.sin(t / 900) + .2 * Math.sin(t / 233);
+      var grd = g.createLinearGradient(0, h, 0, h * .5);
+      grd.addColorStop(0, RGBA(amb.a1, .15 + .10 * pulse));
+      grd.addColorStop(.55, RGBA(amb.a1, .05 * pulse));
+      grd.addColorStop(1, RGBA(amb.a1, 0));
+      g.fillStyle = grd; g.fillRect(0, h * .5, w, h * .5);
+      for (var i = 0; i < embers.length; i++) {
+        var e = embers[i];
+        e.y -= e.vy; e.x += e.vx + Math.sin((e.y + e.ph * 30) / 58) * .55; e.vy *= .996; e.a *= .992;
+        if (e.y < h * .12 || e.a < .04) embers[i] = newEmber();
+        g.globalAlpha = Math.max(0, e.a);
+        g.fillStyle = RGBA(e.y > h * .86 ? amb.a2 : amb.a1, .92);
+        g.beginPath(); g.arc(e.x, e.y, e.r, 0, 6.284); g.fill();
+      }
+      g.globalAlpha = 1;
+    }
+    /* 白雲緩慢飄過：大面積柔光橢圓 */
+    function drawClouds() {
+      for (var i = 0; i < clouds.length; i++) {
+        var cl = clouds[i];
+        cl.x += cl.v;
+        if (cl.x - cl.rw * 1.7 > w) clouds[i] = newCloud(false);
+        /* 三團一組（大中小），這樣才像一朵慢慢飄過的雲，而不是一顆柔光球 */
+        for (var p = 0; p < 3; p++) {
+          var ox = (p - 1) * cl.rw * .56, oy = (p === 1 ? -cl.rw * .14 : cl.rw * .06);
+          var rw = cl.rw * (p === 1 ? .86 : (.5 + p * .05));
+          var gr = g.createRadialGradient(0, 0, 0, 0, 0, rw);
+          gr.addColorStop(0, RGBA('#ffffff', cl.a * (p === 1 ? 1 : .78)));
+          gr.addColorStop(.5, RGBA(amb.a2, cl.a * .5));
+          gr.addColorStop(1, RGBA('#ffffff', 0));
+          g.save(); g.translate(cl.x + ox, cl.y + oy); g.scale(1, .34);
+          g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rw, 0, 6.284); g.fill();
+          g.restore();
+        }
+      }
+    }
+    /* 紫色閃電：不定期鋸齒雷擊＋瞬間紫閃＋餘光 */
+    function drawLightning(t) {
+      var base = g.createRadialGradient(w * .5, h * .1, 0, w * .5, h * .1, h);
+      base.addColorStop(0, RGBA(amb.a1, .06)); base.addColorStop(1, RGBA(amb.a1, 0));
+      g.fillStyle = base; g.fillRect(0, 0, w, h);
+      if (!bolt && t > nextBolt) { nextBolt = t + 1500 + Math.random() * 2600; bolt = { born: t, pts: makeBolt() }; }
+      if (!bolt) return;
+      var age = t - bolt.born;
+      if (age > 900) { bolt = null; return; }
+      var flick = (age < 90 || age % 90 < 44) ? 1 : .3;
+      var al = Math.max(0, 1 - age / 900) * flick;
+      var main = bolt.pts.main, fork = bolt.pts.fork;
+      g.save();
+      g.shadowColor = RGBA(amb.a1, .95); g.shadowBlur = 22;
+      g.strokeStyle = RGBA('#ffffff', .5 + .45 * al); g.lineWidth = 1.3 + 1.2 * al;
+      g.beginPath();
+      for (var i = 0; i < main.length; i++) { if (i === 0) g.moveTo(main[i].x, main[i].y); else g.lineTo(main[i].x, main[i].y); }
+      g.stroke();
+      g.lineWidth = .8 + .6 * al; g.globalAlpha = .55;
+      g.beginPath();
+      for (var f = 0; f < fork.length; f++) { if (f === 0) g.moveTo(fork[f].x, fork[f].y); else g.lineTo(fork[f].x, fork[f].y); }
+      g.stroke();
+      g.globalAlpha = 1;
+      g.shadowBlur = 0;
+      g.strokeStyle = RGBA(amb.a1, .5 * al); g.lineWidth = 5.5 * al;
+      g.beginPath();
+      for (var j = 0; j < main.length; j++) { if (j === 0) g.moveTo(main[j].x, main[j].y); else g.lineTo(main[j].x, main[j].y); }
+      g.stroke();
+      g.restore();
+      if (age < 200) { g.fillStyle = RGBA(amb.a1, .14 * (1 - age / 200)); g.fillRect(0, 0, w, h); }
+    }
+
     (function tick() {
       if (!ambientOn) { g.clearRect(0, 0, w, h); return; }
+      var t = Date.now(), m = amb.mode;
       g.clearRect(0, 0, w, h);
-      for (var i = 0; i < motes.length; i++) {
-        var m = motes[i];
-        m.y -= m.vy; m.x += m.vx + Math.sin((m.y + m.ph * 40) / 90) * .22;
-        if (m.y < -10) motes[i] = newMote(w, h, false);
-        g.globalAlpha = m.a * (0.6 + 0.4 * Math.sin(Date.now() / 1400 + m.ph));
-        g.fillStyle = 'rgba(' + m.hue + ',1)';
-        g.beginPath(); g.arc(m.x, m.y, m.r, 0, 6.284); g.fill();
-      }
+      if (m === 'leaves') drawFall(t, true);
+      else if (m === 'petals' || m === 'petalsGold') drawFall(t, false);
+      else if (m === 'ripple') drawRipple(t);
+      else if (m === 'flame') drawFlame(t);
+      else if (m === 'cloud') drawClouds();
+      else if (m === 'lightning') drawLightning(t);
+      else drawFall(t, false);
       g.globalAlpha = 1;
       requestAnimationFrame(tick);
     }());
@@ -427,6 +604,7 @@
   window.XXTransition = {
     init: function () { initDom(); if (!calm()) ambient(); },
     stopAmbient: function () { ambientOn = false; },
+    setAmbient: setAmbient,
     killAll: killAll,
     isCalm: function () { return calm(); },
     setVideoMap: function (m) { videoMap = m || {}; },

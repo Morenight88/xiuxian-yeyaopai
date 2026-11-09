@@ -46,22 +46,35 @@ window.XX_CONFIG = {
     displayName: { zh: '毛奈', en: 'MaoNai' }
   },
 
-  /* ── 4. 角色清單（七個選項，含名稱、代號、過場特效）─────────────────
+  /* ── 4. 角色清單（七個選項，含名稱、代號、過場特效、專屬主題）───────
      fx: 'petals'花瓣 | 'talisman'符咒 | 'sword'飛劍 | 'flame'業火
          'lightning'雷劫 | 'sound'音波 | 'ink'水墨
      glyph: 中央大字／粒子用的符號
-     aliases: 雲端影片檔名比對用（也接受代號、拼音、數字 1-7）         */
+     aliases: 雲端影片檔名比對用（也接受代號、拼音、數字 1-7）
+     theme: 選了這個角色後，全站配色＋常駐背景動畫（說明在 theme.js 頂部）
+         a1 主配色 / a2 副配色 / ink 質感黑 / ink2 卡片底
+         light true = 白系（白字白線為主）  false = 黑系（a1 當主要亮點）
+         bgfx: petals 櫻花 | petalsGold 黃花瓣 | ripple 水波紋
+               flame 火焰 | cloud 白雲 | lightning 紫電 | leaves 綠葉
+     清單第 1 個（小師姐）＝ 全站預設主題。                            */
   characters: [
-    { id: 'xiao-shi-jie', zh: '小師姐',  en: 'Junior Sister',      glyph: '❀', fx: 'petals',    c1: '#ff9ec4', c2: '#ffd9e6' },
-    { id: 'shi-zun',      zh: '師尊',    en: 'The Master',         glyph: '☯', fx: 'talisman',  c1: '#e6c26b', c2: '#fff2c2' },
-    { id: 'da-shi-xiong', zh: '大師兄',  en: 'Eldest Brother',     glyph: '⚔', fx: 'sword',     c1: '#7fc4ff', c2: '#dff0ff' },
-    { id: 'er-shi-jie',   zh: '二師姐',  en: 'Second Sister',      glyph: '♨', fx: 'flame',     c1: '#ff8a5c', c2: '#ffd9b8' },
-    { id: 'san-shi-xiong',zh: '三師兄',  en: 'Third Brother',      glyph: '⚡', fx: 'lightning', c1: '#a9e4ff', c2: '#ffffff' },
-    { id: 'xuan-yin-lao-zu', zh: '玄音老祖', en: 'Elder XuanYin',   glyph: '☰', fx: 'sound',     c1: '#b49bff', c2: '#e4dcff' },
-    { id: 'zuo-zhe-xiao-shi-di', zh: '作者小師弟', en: 'Author Disciple', glyph: '筆', fx: 'ink', c1: '#8ce0c0', c2: '#d9fff2' }
+    { id: 'xiao-shi-jie', zh: '小師姐',  en: 'Junior Sister',      glyph: '❀', fx: 'petals',    c1: '#ff9ec4', c2: '#ffd9e6',
+      theme: { a1: '#ff9ec4', a2: '#ffffff', ink: '#0b0a0f', ink2: '#17131c', light: true,  bgfx: 'petals' } },
+    { id: 'shi-zun',      zh: '師尊',    en: 'The Master',         glyph: '☯', fx: 'talisman',  c1: '#e6c26b', c2: '#fff2c2',
+      theme: { a1: '#e6c26b', a2: '#fff2c2', ink: '#07070b', ink2: '#101017', light: false, bgfx: 'petalsGold' } },
+    { id: 'da-shi-xiong', zh: '大師兄',  en: 'Eldest Brother',     glyph: '⚔', fx: 'sword',     c1: '#7fc4ff', c2: '#dff0ff',
+      theme: { a1: '#6fc0ff', a2: '#dff0ff', ink: '#05070c', ink2: '#0c1219', light: false, bgfx: 'ripple' } },
+    { id: 'er-shi-jie',   zh: '二師姐',  en: 'Second Sister',      glyph: '♨', fx: 'flame',     c1: '#ff8a5c', c2: '#ffd9b8',
+      theme: { a1: '#ff8a5c', a2: '#ffd9b8', ink: '#0a0705', ink2: '#14100c', light: false, bgfx: 'flame' } },
+    { id: 'san-shi-xiong',zh: '三師兄',  en: 'Third Brother',      glyph: '⚡', fx: 'lightning', c1: '#a9e4ff', c2: '#ffffff',
+      theme: { a1: '#a8dcff', a2: '#ffffff', ink: '#0b0f16', ink2: '#151b24', light: true,  bgfx: 'cloud' } },
+    { id: 'xuan-yin-lao-zu', zh: '玄音老祖', en: 'Elder XuanYin',   glyph: '☰', fx: 'sound',     c1: '#b49bff', c2: '#e4dcff',
+      theme: { a1: '#b49bff', a2: '#ffffff', ink: '#0a0813', ink2: '#15121f', light: true,  bgfx: 'lightning' } },
+    { id: 'zuo-zhe-xiao-shi-di', zh: '作者小師弟', en: 'Author Disciple', glyph: '筆', fx: 'ink', c1: '#8ce0c0', c2: '#d9fff2',
+      theme: { a1: '#55d6a8', a2: '#ffffff', ink: '#04080a', ink2: '#0c1214', light: false, bgfx: 'leaves' } }
   ],
 
-  /* ── 5. 角色過場影片：作者後期補影片的两种方式 ──────────────────────
+  /* ── 5. 角色過場影片：作者後期補影片的兩種方式 ──────────────────────
      (A) 直接把影片上傳到 drive.characterVideoFolderId 資料夾，檔名前綴
          用角色名或代號即可，例如：
            小師姐.mp4 / xiao-shi-jie.mp4 / 1.mp4 / shi-zun.webm

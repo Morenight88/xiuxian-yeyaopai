@@ -209,6 +209,7 @@ window.XX_I18N = {
     'picker.cloudNote': '青羽門目前走傳書法陣（Apps Script）：從瀏覽器直接上傳的檔案會在轉址時散掉，所以雲端模式請先把檔案放進 Drive 的影像庫資料夾，再回來這裡選用。示範模式（沒接後端）仍可直接上傳。',
     'picker.openDrive': '打開青羽門影像庫（Drive）',
     'picker.recheck': '我放好了，重新檢查影像庫',
+    'settings.themeNote': '畫面主題跟著你選的角色走：現在是「{{name}}」的配色，背景動畫也換成那個角色的樣式。換角色＝換配色＋換背景動畫。',
 
     'common.loading': '載入中…',
     'common.retry': '重試',
@@ -430,6 +431,7 @@ window.XX_I18N = {
     'picker.cloudNote': 'Qingyu Gate currently works through the message array (Apps Script): a file uploaded straight from the browser falls apart on the redirect, so in cloud mode put the file into the vault folder on Drive first, then pick it here. Demo mode (no backend) can still upload directly.',
     'picker.openDrive': 'Open the media vault (Drive)',
     'picker.recheck': 'I put it there — rescan the vault',
+    'settings.themeNote': 'The look follows your chosen character: right now it is "{{name}}", and the background animation uses that character\u2019s style too. Change character, change palette and background.',
 
     'common.loading': 'Loading…',
     'common.retry': 'Retry',

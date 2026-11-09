@@ -23,6 +23,10 @@
   /* ══════════ 小工具 ══════════ */
   function el(html) { var d = document.createElement('div'); d.innerHTML = String(html).trim(); return d.firstElementChild; }
   function charById(id) { for (var i = 0; i < CHARS.length; i++) if (CHARS[i].id === id) return CHARS[i]; return null; }
+  /* 依「最愛的角色」換整套配色＋常駐背景動畫（見 theme.js / config.js characters[].theme）*/
+  function applyTheme(favId) {
+    try { if (window.XX_THEME) window.XX_THEME.applyId(favId || window.XX_THEME.DEFAULT_ID); } catch (e) { }
+  }
   function isAdmin() { return !!(S.user && S.user.role === 'admin'); }
   function brandName() { return I18N.brand(); }
   function withTimeout(p, ms) {
@@ -181,6 +185,8 @@
   function boot() {
     TR.init();
     var q = new URLSearchParams(location.search);
+    // 進站第一時間就依上次選過的角色套上主題（沒選過＝預設小師姐）
+    applyTheme((API.cachedMe() || {}).favorite);
     if (CFG.motion.enabled === false) document.body.classList.add('xx-calm');
     // 上次載入沒完成（當機／硬關視窗）→ 這次直接進畫面、暫停動畫
     var prev = lastBootMark();
@@ -194,7 +200,7 @@
     bindStatic();
     // 作者預覽／測試用：?shot=account|fav|home|settings|suggest（僅限示範模式）
     var shot = (q.get('shot') || '').toLowerCase();
-    var animOnly = { intro: 1, drop: 1, sword: 1, char: 1, debug: 1, flow: 1, stuck: 1, watchdog: 1, loginflow: 1, auth: 1, fx7: 1 };
+    var animOnly = { intro: 1, drop: 1, sword: 1, char: 1, debug: 1, flow: 1, stuck: 1, watchdog: 1, loginflow: 1, auth: 1, fx7: 1, favshot: 1, themes: 1 };
     if (shot && (API.mode() === 'local' || animOnly[shot])) { return previewShot(shot).catch(function (e) { console.warn('[xx] preview', e); }); }
     if (!saved) { showScreen('lang', { instant: true }); bootMark('ready'); if (rough) toast(t('recovery.boot'), 'bad'); return; }
     markLang(saved);
@@ -329,6 +335,41 @@
         });
       });
       return chain.then(function () { logDump(flog); });
+    }
+    if (shot === 'favshot') {
+      // 作者檢視用：?shot=favshot&c=0..6 → 套用該角色主題並渲染「七個選項」頁
+      // （七種配色＋七種背景動畫可以一張截圖就看出差別）
+      var pq = new URLSearchParams(location.search);
+      var ci = Math.max(0, Math.min(CHARS.length - 1, parseInt(pq.get('c') || '0', 10) || 0));
+      var chc = CHARS[ci];
+      applyTheme(chc.id);
+      S.user = { username: '仙友', role: 'member', favorite: chc.id };
+      var fcounts = {}, ftot = 0;
+      CHARS.forEach(function (x, k) { fcounts[x.id] = (CHARS.length - k) * 3; ftot += fcounts[x.id]; });
+      S.votes = { counts: fcounts, total: ftot };
+      showScreen('fav', { instant: true });
+      renderFav();
+      if (pq.get('home')) { showScreen('home', { instant: true }); mountHome(); }
+      var cs = getComputedStyle(document.documentElement);
+      var tlog = ['主題 ' + (ci + 1) + '/7 → ' + I18N.charName(chc) + '（' + chc.id + '）',
+        '背景動畫=' + chc.theme.bgfx + ' | 主配色=' + chc.theme.a1 + ' | 副配色=' + chc.theme.a2 + ' | 質感黑=' + chc.theme.ink + ' | 白系=' + chc.theme.light,
+        '生效變數 --gold=' + cs.getPropertyValue('--gold').trim() + ' | --txt=' + cs.getPropertyValue('--txt').trim() + ' | --bg-op=' + cs.getPropertyValue('--bg-op').trim(),
+        'body[data-theme]=' + document.body.getAttribute('data-theme') +
+        ' | 選項卡配色塊=' + document.querySelectorAll('.fav-dots i').length +
+        ' | 卡數=' + document.querySelectorAll('.fav-card').length];
+      return Promise.resolve().then(function () { logDump(tlog); });
+    }
+    if (shot === 'themes') {
+      // 作者檢視用：?shot=themes → 七套主題依序套一遍，確認變數真的有換過去
+      var tlist = [], cs2 = getComputedStyle(document.documentElement);
+      CHARS.forEach(function (x) {
+        applyTheme(x.id);
+        tlist.push((x.zh || x.en) + ' → data-theme=' + document.body.getAttribute('data-theme') +
+          ' | gold=' + cs2.getPropertyValue('--gold').trim() + ' | txt=' + cs2.getPropertyValue('--txt').trim() +
+          ' | bg=' + cs2.getPropertyValue('--bg-c1').trim() + ' | 動畫=' + x.theme.bgfx + ' | 強度=' + cs2.getPropertyValue('--bg-op').trim());
+      });
+      applyTheme(window.XX_THEME ? window.XX_THEME.DEFAULT_ID : null);
+      return Promise.resolve().then(function () { logDump(tlist); });
     }
     var demoName = '試劍者', admin = CFG.admin.username;
     return API.init()
@@ -578,7 +619,7 @@
     });
   }
 
-  function rememberMe(user) { try { localStorage.setItem('xx.me', JSON.stringify(user)); } catch (e) { } }
+  function rememberMe(user) { try { localStorage.setItem('xx.me', JSON.stringify(user)); } catch (e) { } applyTheme(user && user.favorite); }
   function btnBusy(sel, on) {
     var b = $(sel);
     if (!b) return;
@@ -593,11 +634,14 @@
     CHARS.forEach(function (c, i) {
       var n = S.votes.counts[c.id] || 0;
       var mine = S.user && S.user.favorite === c.id;
-      var card = el('<button type="button" class="fav-card' + (mine ? ' is-mine' : '') + '" data-id="' + c.id + '" style="--c1:' + c.c1 + ';--c2:' + c.c2 + '">' +
+      var pal = window.XX_THEME ? window.XX_THEME.paletteOf(c) : { a1: c.c1, a2: c.c2 };
+      var sty = window.XX_THEME ? window.XX_THEME.cardVars(c) : ('--c1:' + c.c1 + ';--c2:' + c.c2);
+      var card = el('<button type="button" class="fav-card' + (mine ? ' is-mine' : '') + '" data-id="' + c.id + '" style="' + sty + '">' +
         '<span class="fav-idx">' + (i + 1) + '</span>' +
         '<span class="fav-glyph">' + (c.glyph || '✦') + '</span>' +
         '<b class="fav-name">' + U.esc(I18N.charName(c)) + '</b>' +
         '<span class="fav-en">' + U.esc(c.en !== I18N.charName(c) ? c.en : '') + '</span>' +
+        '<span class="fav-dots"><i style="background:' + pal.a1 + '"></i><i style="background:' + pal.a2 + '"></i><i style="background:' + ((c.theme && c.theme.ink) || '#14141a') + '"></i></span>' +
         '<span class="fav-count">' + t('fav.count', { count: n }) + '</span>' +
         '<span class="fav-bar"><i style="width:' + pct(n, S.votes.total) + '%"></i></span>' +
         (S.videos[c.id] ? '<span class="fav-video">' + t('post.video') + '</span>' : '') +
@@ -1232,6 +1276,7 @@
     // 最愛角色／進場動畫
     var favCard = el('<div class="set-card"><h3>' + t('settings.character') + '</h3>' +
       '<p class="set-hint">' + (S.user.favorite ? t('fav.selected', { name: I18N.charName(charById(S.user.favorite)) }) : t('settings.characterNone')) + '</p>' +
+      (S.user.favorite ? '<p class="set-hint">' + t('settings.themeNote', { name: I18N.charName(charById(S.user.favorite)) }) + '</p>' : '') +
       '<div class="chip-grid" id="set-fav"></div><p class="set-hint">' + t('fav.videoNote') + '</p></div>');
     var cg = favCard.querySelector('#set-fav');
     CHARS.forEach(function (c) {
@@ -1305,6 +1350,7 @@
       return API.logout().then(function () {
         S.user = null; S.posts = []; S.panel = 'feed';
         try { localStorage.removeItem('xx.me'); } catch (e) { }
+        applyTheme(null);   // 登出 → 回到預設主題（小師姐）
         $('#feed').innerHTML = '';
         showScreen('account');
         setTab('login');
